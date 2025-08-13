@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protests Score</title>
+    <style>
+        body {
+            background-color: white;
+            color: black;
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .list {
+            counter-reset: item;
+            padding-left: 0;
+        }
+        .list-item {
+            margin-bottom: 15px;
+            counter-increment: item;
+            list-style-type: none;
+        }
+        .sentence-pair {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .english {
+            text-align: left;
+            padding-right: 20px; /* Add some space between sentences */
+        }
+        .english::before {
+            content: counter(item) ". ";
+            font-weight: bold;
+        }
+        .hebrew {
+            text-align: right;
+            direction: rtl;
+        }
+        .hebrew::before {
+            content: counter(item) ". ";
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="list">
+            <div class="list-item">
+                <div class="sentence-pair">
+                    <span class="english">Stop the war on Gaza.</span>
+                    <span class="hebrew">עצרו את המלחמה בעזה.</span>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="sentence-pair">
+                    <span class="english">Ceasefire now.</span>
+                    <span class="hebrew">הפסקת אש עכשיו.</span>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="sentence-pair">
+                    <span class="english">From the river to the sea, Palestine will be free.</span>
+                    <span class="hebrew">מהנהר ועד הים, פלסטין תהיה חופשית.</span>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="sentence-pair">
+                    <span class="english">End the occupation.</span>
+                    <span class="hebrew">די לכיבוש.</span>
+                </div>
+            </div>
+            <div class="list-item">
+                <div class="sentence-pair">
+                    <span class="english">Free Palestine.</span>
+                    <span class="hebrew">שחררו את פלסטין.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,258 @@
+# Satellite Image Finder
+
+A minimalist landing page that allows users to find and browse satellite images using Google Maps, then process them through a backend API to generate video content.
+
+## Features
+
+- **Find Your Satellite Image**: Uses geolocation to automatically find the user's location and display a 512x512 satellite image
+- **Browse Satellite Images**: Allows users to browse and select any location on an interactive map to get a satellite image
+- **Backend Processing**: Send selected satellite images to a backend API for processing and video generation
+- **Video Display**: Display the generated video content alongside the original satellite image in a side-by-side layout
+- **Multi-user Support**: Unique session handling to support multiple concurrent users
+- Clean, minimalist design with vanilla HTML, CSS, and JavaScript
+
+## Workflow
+
+1. User selects a location (via geolocation or map browsing)
+2. Satellite image is displayed in a 512x512 frame
+3. User clicks "Continue with this image"
+4. Image is sent to backend API via POST request with session ID
+5. Backend processes the image and returns a video file
+6. Original image and generated video are displayed side-by-side in 512x512 frames
+7. User can start a new analysis or view results
+
+## Setup
+
+### 1. Get a Google Maps API Key
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the following APIs:
+   - Maps JavaScript API
+   - Maps Static API
+4. Create credentials (API Key)
+5. Restrict the API key (recommended):
+   - Set HTTP referrers restriction for your domain
+   - Restrict to Maps JavaScript API and Maps Static API
+
+### 2. Configure the Frontend
+
+1. Copy `config.example.js` to `config.js`
+2. Edit the `config.js` file:
+   ```javascript
+   const CONFIG = {
+       GOOGLE_MAPS_API_KEY: 'your_actual_api_key_here',
+       BACKEND_API_URL: 'http://localhost:3000/api/process-image',
+       AUTHORIZATION_TOKEN: 'your_secure_secret_token_here'
+   };
+   ```
+
+### 3. Backend API Requirements
+
+Your backend API should handle POST requests to the configured endpoint (`/api/process-image` by default) with the following:
+
+#### Request Format
+- **Method**: POST
+- **Content-Type**: multipart/form-data
+- **Headers**:
+  - `Authorization`: Bearer token (e.g., `Bearer your_secret_token_here`)
+- **Fields**:
+  - `image`: The satellite image file (PNG format)
+  - `latitude`: String containing the latitude coordinates
+  - `longitude`: String containing the longitude coordinates  
+  - `session_id`: Unique session identifier for tracking user requests
+
+#### Response Format
+```json
+{
+  "video_url": "https://your-backend.com/videos/generated_video.mp4",
+  "status": "success"
+}
+```
+
+#### Alternative Response Fields
+The frontend also supports `videoUrl` (camelCase) as an alternative to `video_url`.
+
+#### Error Handling
+- Return appropriate HTTP status codes (4xx for client errors, 5xx for server errors)
+- The frontend will display error messages and allow users to retry
+
+### 4. CORS Configuration
+
+Ensure your backend allows requests from your frontend domain:
+
+```javascript
+// Example for Express.js
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://your-domain.com'],
+  credentials: true
+}));
+```
+
+### 5. Development Server (Optional)
+
+For testing, we've included a Flask development server that mimics your backend:
+
+1. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Set authorization token** (optional):
+   ```bash
+   export AUTHORIZATION_TOKEN="your_secret_token_here"
+   ```
+
+3. **Run the development server**:
+   
+   **Option A - Quick Start (macOS/Linux)**:
+   ```bash
+   ./start_dev_server.sh
+   ```
+   
+   **Option B - Manual**:
+   ```bash
+   python dev_server.py
+   ```
+
+4. **Update your config.js**:
+   ```javascript
+   const CONFIG = {
+       GOOGLE_MAPS_API_KEY: 'your_actual_api_key_here',
+       BACKEND_API_URL: 'http://localhost:3000/api/process-image',
+       AUTHORIZATION_TOKEN: 'dev_token_123'  // or your custom token
+   };
+   ```
+
+### 6. Run the Application
+
+Simply open `index.html` in a web browser. For best results, serve it through a web server rather than opening the file directly.
+
+**Important Security Notes:**
+- The `config.js` file is included in `.gitignore` to prevent accidentally committing your API key and authorization token
+- **Authorization tokens are visible in the frontend** - use this for basic protection, not high-security applications
+- For production deployment, consider using environment variables or server-side key injection
+- Client-side API keys are visible to users, so make sure to restrict your key properly in Google Cloud Console
+- Generate strong, random authorization tokens and keep them secret
+
+## Usage
+
+1. **Find Your Satellite Image**: 
+   - Click the button and allow location access
+   - View your location's satellite image
+   - Click "Continue with this image" to process
+
+2. **Browse Satellite Images**:
+   - Click the button to open the interactive map
+   - Click anywhere on the map to select a location
+   - Click "Select this location" to view the satellite image
+   - Click "Continue with this image" to process
+
+3. **View Results**:
+   - Wait for processing to complete (loading spinner shows progress)
+   - View original satellite image and generated video side-by-side
+   - Click "Analyze Another Image" to start over
+
+## Multi-User Support
+
+The application handles multiple concurrent users by:
+- Generating unique session IDs for each request
+- Including session IDs in backend API calls
+- Maintaining separate state for each user session
+- Preventing cross-user result mixing
+
+## File Structure
+
+```
+├── index.html              # Main landing page with processing workflow
+├── style.css               # Minimalist styling with grid layout
+├── script.js               # JavaScript functionality with backend integration
+├── config.js               # API key and backend URL configuration (git-ignored)
+├── config.example.js       # Example configuration file
+├── dev_server.py           # Flask development server for testing
+├── requirements.txt        # Python dependencies for development server
+├── start_dev_server.sh     # Quick startup script for development server
+├── .gitignore              # Git ignore rules
+└── README.md               # Setup instructions
+```
+
+## Backend Example
+
+Here's a minimal Node.js/Express backend example:
+
+```javascript
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+
+const app = express();
+const upload = multer({ dest: 'uploads/' });
+
+app.use(cors());
+
+// Authorization middleware
+const AUTHORIZATION_TOKEN = process.env.AUTHORIZATION_TOKEN || 'your_secret_token_here';
+
+function validateAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid authorization header' });
+  }
+  
+  const token = authHeader.replace('Bearer ', '');
+  if (token !== AUTHORIZATION_TOKEN) {
+    return res.status(401).json({ error: 'Invalid authorization token' });
+  }
+  
+  next();
+}
+
+app.post('/api/process-image', validateAuth, upload.single('image'), async (req, res) => {
+  try {
+    const { latitude, longitude, session_id } = req.body;
+    const imageFile = req.file;
+    
+    // Process your image here
+    // Generate video content
+    // Save or upload video
+    
+    const videoUrl = 'https://your-cdn.com/generated-video.mp4';
+    
+    res.json({
+      video_url: videoUrl,
+      status: 'success'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Processing failed' });
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Backend running on port 3000');
+});
+```
+
+## Development Notes
+
+- `config.js` is git-ignored to protect your API key and authorization token
+- Use `config.example.js` as a template for your `config.js`
+- The application validates that you've set up your API key and authorization correctly
+- All satellite images and videos are displayed as 512x512 pixels
+- Backend URL and authorization token are configurable in `config.js`
+- Session IDs prevent user result mixing in concurrent usage
+- Development server converts satellite images to 5-second looping videos for testing
+- Authorization provides basic API protection (not suitable for high-security applications)
+
+## Browser Compatibility
+
+- Requires a modern browser with geolocation support
+- Works best in Chrome, Firefox, Safari, and Edge
+- Requires HTTPS for geolocation in production
+- Supports modern video formats (MP4 recommended)
+
+## Alternative Free Solutions
+
+If you prefer not to use Google Maps API (which has usage costs), consider these free alternatives:
+- Mapbox (generous free tier)
+- OpenStreetMap with Leaflet
+- Esri World Imagery (free satellite tiles) 

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gaza Deaths & Elbit Profit Counter</title>
+<style>
+  body {
+    background: white;
+    color: black;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .label {
+    font-size: 2em;
+    margin: 20px 0 5px;
+  }
+  .number {
+    font-size: 4em;
+    font-weight: bold;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+ 
+  /* --- NEW STYLES FOR 3D DIGIT FLIP --- */
+  .profit-char-container {
+    display: inline-block;
+    position: relative;
+    perspective: 400px;
+    height: 4rem; /* Match .number font-size */
+    line-height: 4rem;
+  }
+  .digit-flipper {
+    position: relative;
+    width: 1ch; /* Width of one character */
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.8s ease-in-out;
+  }
+  .digit-flipper.flip {
+    transform: rotateX(-90deg);
+  }
+  .face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    text-align: center;
+  }
+  .face.front {
+    transform: rotateX(0deg) translateZ(2rem);
+  }
+  .face.top {
+    transform: rotateX(90deg) translateZ(2rem);
+  }
+
+
+</style>
+</head>
+<body>
+
+<div class="label">Gaza Deaths</div>
+<div id="casualtyCounter" class="number">0</div>
+
+<div class="label">Estimated Elbit Profit</div>
+<div id="profitCounter" class="number"></div>
+
+<script>
+  const API_URL = "http://localhost:5500/casualties.json"; // Change to your backend URL
+  const PROFIT_PER_DEATH = 2000; // USD
+  const animationDurationMs = 60000;
+//   const animationDurationMs = 1000;
+  const DAILY_REFRESH_MS = 24 * 60 * 60 * 1000;
+
+  let latestOfficialCasualties = 0;
+  let displayedCasualties = 0;
+  let deathsPerSecond = 0;
+  let liveTickerInterval = null;
+  let lastSyncTime = Date.now();
+
+  const casualtyCounterElement = document.getElementById("casualtyCounter");
+  const profitCounterElement = document.getElementById("profitCounter");
+  let previousProfitString = '';
+
+  async function fetchLatest() {
+    try {
+      const r = await fetch(API_URL, { cache: "no-store" });
+      if (!r.ok) throw new Error("fetch failed");
+      const j = await r.json();
+      if (typeof j.latest_casualties !== "number") throw new Error("bad payload");
+      return j.latest_casualties;
+    } catch (err) {
+      console.error("Failed to fetch casualties:", err);
+      return null;
+    }
+  }
+
+  function computeRateFromStartToNow(totalDeaths, now = new Date()) {
+    const start = new Date(Date.UTC(2023, 9, 7, 0, 0, 0)); // months are 0-indexed: 9 = Oct
+    const seconds = (now.getTime() - start.getTime()) / 1000;
+    if (seconds <= 0) return 0;
+   return totalDeaths / seconds; // deaths per second
+  }
+
+  function updateProfitDisplay(newString) {
+    const oldString = previousProfitString;
+    const maxLength = Math.max(oldString.length, newString.length);
+    const paddedOld = oldString.padStart(maxLength, ' ');
+    const paddedNew = newString.padStart(maxLength, ' ');
+
+    for (let i = 0; i < maxLength; i++) {
+        if (paddedOld[i] === paddedNew[i]) continue;
+
+        const container = profitCounterElement.children[i];
+        if (!container) continue; 
+        
+        const flipper = container.querySelector('.digit-flipper');
+        const frontFace = flipper.querySelector('.face.front');
+        const topFace = flipper.querySelector('.face.top');
+
+        frontFace.textContent = paddedOld[i].trim() || '\u00A0';
+        topFace.textContent = paddedNew[i].trim() || '\u00A0';
+        
+        flipper.classList.add('flip');
+
+        flipper.addEventListener('transitionend', function handleFlipEnd() {
+            frontFace.textContent = paddedNew[i].trim() || '\u00A0';
+            flipper.style.transition = 'none';
+            flipper.classList.remove('flip');
+            void flipper.offsetHeight;
+            flipper.style.transition = '';
+            topFace.textContent = '';
+            flipper.removeEventListener('transitionend', handleFlipEnd);
+        });
+    }
+  }
+
+  function renderCounters(casualties, animateProfitDigits = false) {
+    const currentCasualties = Math.floor(casualties);
+    casualtyCounterElement.textContent = currentCasualties.toLocaleString();
+    
+    const newProfit = currentCasualties * PROFIT_PER_DEATH;
+    const newProfitString = `$${newProfit.toLocaleString()}`;
+
+    if (newProfitString === previousProfitString) {
+      return;
+    }
+
+    const currentLength = profitCounterElement.children.length;
+    const newLength = newProfitString.length;
+
+    if (newLength > currentLength) {
+        for (let i = 0; i < newLength - currentLength; i++) {
+            const container = document.createElement('div');
+            container.className = 'profit-char-container';
+            const flipper = document.createElement('div');
+            flipper.className = 'digit-flipper';
+            const frontFace = document.createElement('div');
+            frontFace.className = 'face front';
+            const topFace = document.createElement('div');
+            topFace.className = 'face top';
+            flipper.appendChild(frontFace);
+            flipper.appendChild(topFace);
+            container.appendChild(flipper);
+            profitCounterElement.appendChild(container);
+        }
+    } else if (newLength < currentLength) {
+        for (let i = 0; i < currentLength - newLength; i++) {
+            profitCounterElement.removeChild(profitCounterElement.lastChild);
+        }
+    }
+
+    if (animateProfitDigits) {
+        updateProfitDisplay(newProfitString);
+    } else {
+        for (let i = 0; i < newProfitString.length; i++) {
+            const frontFace = profitCounterElement.children[i]?.querySelector('.face.front');
+            if (frontFace) frontFace.textContent = newProfitString[i];
+        }
+    }
+    previousProfitString = newProfitString;
+  }
+  
+  function animateTo(target, durationMs, onDone) {
+    const start = performance.now();
+    const from = displayedCasualties;
+    function step(now) {
+      const t = Math.min(1, (now - start) / durationMs);
+      const easedT = 1 - Math.pow(1 - t, 4); 
+
+      displayedCasualties = from + (target - from) * easedT;
+      renderCounters(displayedCasualties, false); // No digit animation during initial sweep
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        displayedCasualties = target;
+        renderCounters(displayedCasualties, false);
+        if (onDone) onDone();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function startLiveTicker() {
+    if (liveTickerInterval) clearInterval(liveTickerInterval);
+    const tickMs = 250;
+    liveTickerInterval = setInterval(() => {
+      const now = Date.now();
+      const previousCasualties = Math.floor(displayedCasualties);
+      displayedCasualties += deathsPerSecond * (tickMs / 1000);
+      const currentCasualties = Math.floor(displayedCasualties);
+
+      if (currentCasualties > previousCasualties) {
+          renderCounters(displayedCasualties, true);
+      }
+      lastSyncTime = now;
+    }, tickMs);
+  }
+
+  async function syncAndStart() {
+    const picked = await fetchLatest();
+    if (picked === null) {
+      console.warn("Using existing number; will retry in 1 hour.");
+      setTimeout(syncAndStart, 60 * 60 * 1000);
+      return;
+    }
+
+    latestOfficialCasualties = picked;
+    deathsPerSecond = computeRateFromStartToNow(latestOfficialCasualties);
+
+    animateTo(latestOfficialCasualties, animationDurationMs, () => {
+      lastSyncTime = Date.now();
+      startLiveTicker();
+    });
+  }
+
+  syncAndStart();
+
+  setInterval(async () => {
+    const newVal = await fetchLatest();
+    if (newVal !== null && newVal !== latestOfficialCasualties) {
+      if (liveTickerInterval) clearInterval(liveTickerInterval);
+      latestOfficialCasualties = newVal;
+      deathsPerSecond = computeRateFromStartToNow(latestOfficialCasualties);
+      animateTo(latestOfficialCasualties, 2000, () => {
+        lastSyncTime = Date.now();
+        startLiveTicker();
+      });
+    }
+  }, DAILY_REFRESH_MS);
+</script>
+
+</body>
+</html>

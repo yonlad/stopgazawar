@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Image Finder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Satellite Image Finder</h1>
+        <p>Discover satellite imagery from anywhere on Earth</p>
+        
+        <div class="buttons">
+            <a href="#" id="find-location" class="button">Find Your Satellite Image</a>
+            <a href="#" id="browse-images" class="button">Browse Satellite Images</a>
+        </div>
+        
+        <div id="result-container" class="hidden">
+            <div id="image-container">
+                <img id="satellite-image" src="" alt="Satellite Image" />
+            </div>
+            <button id="continue-btn" class="continue-button">Continue with this image</button>
+        </div>
+        
+        <div id="processing-container" class="hidden">
+            <h2>Processing your satellite image...</h2>
+            <div class="loading-spinner"></div>
+            <p>Please wait while we analyze your image and generate the result.</p>
+        </div>
+        
+        <div id="results-display" class="hidden">
+            <h2>Your Results</h2>
+            <div class="results-grid">
+                <div class="result-item">
+                    <h3>Original Satellite Image</h3>
+                    <div class="media-frame">
+                        <img id="original-image" src="" alt="Original Satellite Image" />
+                    </div>
+                </div>
+                <div class="result-item">
+                    <h3>Generated Video</h3>
+                    <div class="media-frame">
+                        <video id="result-video" autoplay loop muted playsinline onclick="this.play()">
+                            <source src="" type="video/mp4">
+                            Your browser does not support the video tag.
+                            <p>Click to play video if it doesn't start automatically.</p>
+                        </video>
+                    </div>
+                </div>
+            </div>
+            <button id="new-analysis-btn" class="continue-button">Analyze Another Image</button>
+        </div>
+        
+        <div id="map-container" class="hidden">
+            <div id="map"></div>
+            <button id="select-location" class="continue-button">Select this location</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Load Google Maps API with the key from config
+        function loadGoogleMaps() {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&callback=initMap`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        loadGoogleMaps();
+        
+    </script>
+    <script src="script.js"></script>
+</body>
+</html> 

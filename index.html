@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Visitor Counter</title>
+<style>
+  body {
+    background: white;
+    color: black;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .counter-text {
+    font-size: 2em;
+  }
+</style>
+</head>
+<body>
+
+<div id="visitorCounter" class="counter-text">you are the ... person to visit this website.</div>
+
+<script>
+  async function updateVisitorCount() {
+    try {
+      const response = await fetch('http://localhost:3000/api/visit', { method: 'POST' });
+      const data = await response.json();
+      const counterElement = document.getElementById('visitorCounter');
+      counterElement.textContent = `you are the ${data.count} person to visit this website.`;
+    } catch (error) {
+      console.error('Error fetching visitor count:', error);
+      const counterElement = document.getElementById('visitorCounter');
+      counterElement.textContent = 'Could not retrieve visitor count.';
+    }
+  }
+
+  updateVisitorCount();
+</script>
+
+</body>
+</html>
