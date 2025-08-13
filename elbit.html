@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A live counter visualizing the correlation between casualty numbers in Gaza and the estimated profits of Elbit Systems.">
+<meta name="keywords" content="Gaza, Elbit, conflict, profit, casualty counter, data visualization, awareness">
 <title>Gaza Deaths & Elbit Profit Counter</title>
 <style>
   body {
@@ -67,6 +70,15 @@
     transform: rotateX(90deg) translateZ(2rem);
   }
 
+  footer {
+    position: absolute;
+    bottom: 20px;
+    font-size: 1em;
+  }
+  footer a {
+    color: black;
+    margin: 0 15px;
+  }
 
 </style>
 </head>
@@ -266,6 +278,12 @@
     }
   }, DAILY_REFRESH_MS);
 </script>
+
+<footer>
+    <a href="about.html">About</a> |
+    <a href="contact.html">Contact</a> |
+    <a href="privacy.html">Privacy Policy</a>
+</footer>
 
 </body>
 </html>
