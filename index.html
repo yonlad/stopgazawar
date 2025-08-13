@@ -27,7 +27,7 @@
 <script>
   async function updateVisitorCount() {
     try {
-      const response = await fetch('http://localhost:3000/api/visit', { method: 'POST' });
+      const response = await fetch('https://https://stopgazawar-server.onrender.com/api/visit', { method: 'POST' });
       const data = await response.json();
       const counterElement = document.getElementById('visitorCounter');
       counterElement.textContent = `you are the ${data.count} person to visit this website.`;

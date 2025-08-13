@@ -15,6 +15,16 @@
     height: 100vh;
     margin: 0;
   }
+  .top-nav {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  .top-nav a {
+    color: black;
+    text-decoration: underline;
+    font-size: 1.2em;
+  }
   .label {
     font-size: 2em;
     margin: 20px 0 5px;
@@ -62,6 +72,10 @@
 </head>
 <body>
 
+<div class="top-nav">
+    <a href="elbit-about.html">About this calculation</a>
+</div>
+
 <div class="label">Gaza Deaths</div>
 <div id="casualtyCounter" class="number">0</div>
 
@@ -69,7 +83,7 @@
 <div id="profitCounter" class="number"></div>
 
 <script>
-  const API_URL = "http://localhost:5500/server/casualties.json"; // Change to your backend URL
+  const API_URL = "https://https://stopgazawar-server.onrender.com/casualties.json"; // Change to your backend URL
   const PROFIT_PER_DEATH = 2000; // USD
   const animationDurationMs = 60000;
 //   const animationDurationMs = 1000;

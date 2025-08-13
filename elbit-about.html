@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>About the Calculation</title>
+<style>
+  body {
+    background: white;
+    color: black;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 40px;
+    box-sizing: border-box;
+  }
+  .top-nav {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+  .top-nav a {
+    color: black;
+    text-decoration: underline;
+    font-size: 1.2em;
+  }
+  .container {
+    max-width: 800px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 1.8em;
+    border-bottom: 2px solid black;
+    padding-bottom: 5px;
+    margin-top: 30px;
+  }
+  p, li {
+    font-size: 1.2em;
+    line-height: 1.6;
+  }
+  ul {
+    list-style-type: square;
+    padding-left: 20px;
+  }
+  code {
+    background-color: #f0f0f0;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+  .source {
+    font-style: italic;
+    color: #555;
+    font-size: 1em;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+    <a href="elbit.html">Back to Counter</a>
+</div>
+
+<div class="container">
+    <h1>How the Calculation Works</h1>
+
+    <h2>1. Base Financial Data</h2>
+    <p>We start with actual reported figures for Elbit Systems in the war period.</p>
+    <ul>
+        <li>Total revenue 2024: <strong>USD $6.83 billion</strong><br><span class="source">Source: Elbit Systems 2024 annual report.</span></li>
+        <li>Share of revenue from Israeli government contracts: <strong>~30%</strong><br><span class="source">Source: Reuters quoting Elbit disclosures during the war.</span><br>That 30% covers domestic sales to the Israeli Ministry of Defense, which includes a large amount of weaponry used in Gaza (e.g., drones, artillery, munitions).</li>
+        <li>Net profit margin: <strong>~5–6%</strong><br><span class="source">Source: Elbit financial statements (net income ÷ revenue). This margin is fairly stable for large defense contractors.</span></li>
+    </ul>
+
+    <h2>2. Isolating Gaza-Linked Revenue</h2>
+    <p>We can’t get a public line item saying "X dollars from Gaza", but we can reasonably argue:</p>
+    <ul>
+        <li>The majority of Israel domestic contracts in late 2023–2024 were tied to the military campaign in Gaza (IDF operations, replenishment of munitions, equipment replacements, etc.).</li>
+        <li>Therefore, 30% of total revenue ≈ war-related domestic sales.</li>
+    </ul>
+    <p><strong>Calculation:</strong></p>
+    <p><code>War-related revenue = 0.30 × $6.83B ≈ $2.05B</code></p>
+
+    <h2>3. Converting Revenue to Profit</h2>
+    <p>Revenue ≠ profit. We apply Elbit’s net profit margin:</p>
+    <p><code>War-related profit = $2.05B × 0.056 (5.6% margin) ≈ $114.8M</code></p>
+
+    <h2>4. Linking Profit to Casualties</h2>
+    <p>Now we take Gaza casualty data (as of Aug 2025):</p>
+    <ul>
+        <li>Deaths = <strong>61,369</strong> (Gaza Health Ministry & UN OCHA)</li>
+    </ul>
+    <p>We divide the total estimated profit from Gaza-related contracts by the number of deaths:</p>
+    <p><code>Profit per death ≈ $114.8M ÷ 61,369 ≈ $1,871</code></p>
+    <p>Rounded for clarity: <strong>~$2,000 profit per Gazan killed.</strong></p>
+</div>
+
+</body>
+</html>
